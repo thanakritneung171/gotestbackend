@@ -13,5 +13,7 @@ func Migrate(db *gorm.DB) {
 	if err != nil {
 		log.Fatalf("Error migrating database: %v", err)
 	}
+	InsertSampleUser()
+	InsertSampleTransaction()
 	log.Println("Database migration completed.")
 }
