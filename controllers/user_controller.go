@@ -48,7 +48,7 @@ func Login(c *gin.Context) {
 }
 
 // GetUser retrieves the logged-in user's details
-func GetUser(c *gin.Context) {
+func GetUserProfile(c *gin.Context) {
 	userId, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not logged in"})
@@ -122,6 +122,75 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, newUser)
 }
 
+// api/accounting.go
+// TransferCredit transfers credit from one user to another
+func TransferCredit(c *gin.Context) {
+	// Parse request body
+	var transferRequest struct {
+		SenderAccount   string  `json:"sender_account"`
+		ReceiverAccount string  `json:"receiver_account"`
+		Amount          float64 `json:"amount"`
+	}
+	if err := c.ShouldBindJSON(&transferRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Implement transfer logic
+	// Check if sender and receiver IDs are valid
+	sender, err := GetUserByAccount(transferRequest.SenderAccount)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Sender not found"})
+		return
+	}
+
+	receiver, err := GetUserByAccount(transferRequest.ReceiverAccount)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Receiver not found"})
+		return
+	}
+
+	// Update sender and receiver credits in database
+	// Validate if sender has enough credit
+	if sender.Credit < transferRequest.Amount {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient credit"})
+		return
+	}
+
+	// Perform credit transfer
+	// db.Model(&sender).Update("credit", sender.Credit - amount)
+	sender.Credit -= transferRequest.Amount
+	// db.Model(&receiver).Update("credit", receiver.Credit + amount)
+	receiver.Credit += transferRequest.Amount
+
+	// Update sender and receiver in database
+	err = database.DB.Save(&sender).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update sender"})
+		return
+	}
+
+	err = database.DB.Save(&receiver).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update receiver"})
+		return
+	}
+
+	// Record transaction
+	transaction := models.Transaction{
+		SenderID:   sender.ID,
+		ReceiverID: receiver.ID,
+		Amount:     transferRequest.Amount,
+	}
+	err = database.DB.Create(&transaction).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Transfer successful"})
+}
+
 func GetAllUser(c *gin.Context) {
 	var user models.User
 	if err := database.DB.Find(&user).Error; err != nil {
@@ -138,6 +207,13 @@ func GetUserByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, user)
+}
+func GetUserByAccount(account_number string) (models.User, error) {
+	var user models.User
+	if err := database.DB.First(&user, account_number).Error; err != nil {
+		return user, nil
+	}
+	return user, nil
 }
 
 func UpdateUserByID(c *gin.Context) {
