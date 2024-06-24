@@ -51,8 +51,10 @@ func main() {
 		// Authenticated routes
 		v1.POST("/user/login", controllers.Login)
 		v1.Use(middlewares.AuthMiddleware())
-		v1.GET("/user/me", controllers.GetUser)
+		v1.GET("/user/profile", controllers.GetUserProfile)
 		v1.PATCH("/user/me", controllers.UpdateUser)
+
+		v1.POST("/accounting/transfer", controllers.TransferCredit)
 	}
 
 	// Swagger route
