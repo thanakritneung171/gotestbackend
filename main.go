@@ -16,7 +16,7 @@ var (
 	db = database.SetupDB() // Initialize your database connection
 )
 
-// @title Gin REST API
+// @title Thanakrit GOlang test Rest API
 // @version 1.0
 // @description This is a sample server for a Gin REST API.
 // @termsOfService http://swagger.io/terms/
@@ -42,19 +42,29 @@ func main() {
 	// Routes
 	v1 := r.Group("/api/v1")
 	{
-		v1.GET("/user/profile/:id", controllers.GetUserProfile)
-		v1.GET("/userAll", controllers.GetAllUser)
+
+		//CRUD
+		//5.
 		v1.POST("/user/register", controllers.Register)
+		v1.GET("/userAll", controllers.GetAllUser)
 		v1.GET("/user/GetUserByID/:id", controllers.GetUserByID)
 		v1.PUT("/user/UpdateUserByID/:id", controllers.UpdateUserByID)
 		v1.DELETE("/user/DeleteUserByID/:id", controllers.DeleteUserByID)
+		//CRUD
+
+		//7.
+		v1.GET("/user/profile/:id", controllers.GetUserProfile)
 
 		// Authenticated routes
+		//6.
 		v1.POST("/user/login", controllers.Login)
 		v1.Use(middlewares.AuthMiddleware())
+		//8.
 		v1.PATCH("/user/me", controllers.UpdateUser)
-
+		//9.
 		v1.POST("/accounting/transfer", controllers.TransferCredit)
+		//10.
+		v1.GET("/accounting/transfer-list", controllers.GetTransferList)
 	}
 
 	// Swagger route
