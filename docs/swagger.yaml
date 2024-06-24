@@ -1,4 +1,27 @@
 basePath: /api/v1
+definitions:
+  models.ErrorResponse:
+    properties:
+      message:
+        description: Code    int    `json:"code"`
+        type: string
+    type: object
+  models.User:
+    properties:
+      account_number:
+        type: string
+      credit:
+        type: number
+      first_name:
+        type: string
+      id:
+        description: gorm.Model
+        type: integer
+      last_name:
+        type: string
+      username:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -12,5 +35,63 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Gin REST API
   version: "1.0"
-paths: {}
+paths:
+  /user/GetUserByID/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get details of a user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get user by ID
+      tags:
+      - users
+  /user/profile/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get user profile
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get by id
+      tags:
+      - user
 swagger: "2.0"

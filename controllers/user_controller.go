@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"net/http"
-
 	"gotestbackend/database"
 	"gotestbackend/models"
+	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -55,19 +55,22 @@ func Login(c *gin.Context) {
 // @Produce      json
 // @Param        id      path    string  true  "User ID"
 // @Success      200     {object} models.User
-// @Failure      400     {object} gin.H{"error": "Invalid request"}
-// @Failure      404     {object} gin.H{"error": "User not found"}
-// @Router       /user/{id} [get]
+// @Failure      400     {object} models.ErrorResponse
+// @Failure      404     {object} models.ErrorResponse
+// @Router       /user/profile [get]
 func GetUserProfile(c *gin.Context) {
-	userId, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not logged in"})
+	var user models.User
+	idparam := c.Param("user_id")
+
+	//Convert idparam to uint
+	userID, err := strconv.ParseUint(idparam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Message: "Invalid user ID"})
 		return
 	}
 
-	var user models.User
-	if err := database.DB.First(&user, userId).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+	if err := database.DB.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Message: "User not found"})
 		return
 	}
 
@@ -209,11 +212,23 @@ func GetAllUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, user)
 }
+
+// GetUser retrieves the logged-in user's details
+// @Summary      Get user by ID
+// @Description  Get details of a user by their ID
+// @Tags 		 users
+// @Accept       json
+// @Produce      json
+// @Param        id      path    string  true  "User ID"
+// @Success      200     {object} models.User
+// @Failure      400     {object} models.ErrorResponse
+// @Failure      404     {object} models.ErrorResponse
+// @Router       /user/GetUserByID/{id} [get]
 func GetUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
 	if err := database.DB.First(&user, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Message: "User not found1111"})
 		return
 	}
 	c.JSON(http.StatusOK, user)

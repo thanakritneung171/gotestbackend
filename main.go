@@ -42,16 +42,16 @@ func main() {
 	// Routes
 	v1 := r.Group("/api/v1")
 	{
+		v1.GET("/user/profile/:id", controllers.GetUserProfile)
 		v1.GET("/userAll", controllers.GetAllUser)
 		v1.POST("/user/register", controllers.Register)
-		v1.GET("/user/:id", controllers.GetUserByID)
-		v1.PUT("/user/:id", controllers.UpdateUserByID)
-		v1.DELETE("/user/:id", controllers.DeleteUserByID)
+		v1.GET("/user/GetUserByID/:id", controllers.GetUserByID)
+		v1.PUT("/user/UpdateUserByID/:id", controllers.UpdateUserByID)
+		v1.DELETE("/user/DeleteUserByID/:id", controllers.DeleteUserByID)
 
 		// Authenticated routes
 		v1.POST("/user/login", controllers.Login)
 		v1.Use(middlewares.AuthMiddleware())
-		v1.GET("/user/profile", controllers.GetUserProfile)
 		v1.PATCH("/user/me", controllers.UpdateUser)
 
 		v1.POST("/accounting/transfer", controllers.TransferCredit)
