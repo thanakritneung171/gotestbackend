@@ -48,6 +48,17 @@ func Login(c *gin.Context) {
 }
 
 // GetUser retrieves the logged-in user's details
+
+// @Summary      Get by id
+// @Description  get user profile
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param        id      path    string  true  "User ID"
+// @Success      200     {object} models.User
+// @Failure      400     {object} gin.H{"error": "Invalid request"}
+// @Failure      404     {object} gin.H{"error": "User not found"}
+// @Router       /user/{id} [get]
 func GetUser(c *gin.Context) {
 	userId, exists := c.Get("user_id")
 	if !exists {
