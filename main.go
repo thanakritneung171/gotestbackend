@@ -41,6 +41,7 @@ func main() {
 
 	// Routes
 	v1 := r.Group("/api/v1")
+	v1.Use(middlewares.JWTAuthMiddleware())
 	{
 
 		//CRUD
@@ -58,7 +59,7 @@ func main() {
 		// Authenticated routes
 		//6.
 		v1.POST("/user/login", controllers.Login)
-		v1.Use(middlewares.AuthMiddleware())
+		//v1.Use(middlewares.AuthMiddleware())
 		//8.
 		v1.PATCH("/user/me", controllers.UpdateUser)
 		//9.

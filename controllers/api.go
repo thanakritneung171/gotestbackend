@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"gotestbackend/database"
+	"gotestbackend/middlewares"
 	"gotestbackend/models"
 	"net/http"
 	"strconv"
@@ -111,17 +112,22 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if err := database.DB.Where("username = ?", payload.Username).First(&user).Error; err != nil {
+	if err := database.DB.Where("username = ? AND password = ?", payload.Username, payload.Password).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+	token, err := middlewares.GenerateToken(user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
 	}
+	// if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password)); err != nil {
+	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+	// 	return
+	// }
 
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user_id": user.ID})
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
 // GetUser retrieves the logged-in user's details
