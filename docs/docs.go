@@ -68,7 +68,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/profile/{id}": {
+        "/user/profile": {
             "get": {
                 "description": "get user profile",
                 "consumes": [
@@ -156,7 +156,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "Gin REST API",
+	Title:            "Thanakrit GOlang test Rest API",
 	Description:      "This is a sample server for a Gin REST API.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

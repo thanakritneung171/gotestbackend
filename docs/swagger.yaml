@@ -33,7 +33,7 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: Gin REST API
+  title: Thanakrit GOlang test Rest API
   version: "1.0"
 paths:
   /user/GetUserByID/{id}:
@@ -65,7 +65,7 @@ paths:
       summary: Get user by ID
       tags:
       - users
-  /user/profile/{id}:
+  /user/profile:
     get:
       consumes:
       - application/json

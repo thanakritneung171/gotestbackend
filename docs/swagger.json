@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "This is a sample server for a Gin REST API.",
-        "title": "Gin REST API",
+        "title": "Thanakrit GOlang test Rest API",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
@@ -62,7 +62,7 @@
                 }
             }
         },
-        "/user/profile/{id}": {
+        "/user/profile": {
             "get": {
                 "description": "get user profile",
                 "consumes": [
