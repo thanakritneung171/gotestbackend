@@ -3,6 +3,7 @@ package main
 import (
 	"gotestbackend/controllers"
 	"gotestbackend/database"
+	"gotestbackend/middlewares"
 
 	_ "gotestbackend/docs"
 
@@ -46,6 +47,12 @@ func main() {
 		v1.GET("/user/:id", controllers.GetUserByID)
 		v1.PUT("/user/:id", controllers.UpdateUserByID)
 		v1.DELETE("/user/:id", controllers.DeleteUserByID)
+
+		// Authenticated routes
+		v1.POST("/user/login", controllers.Login)
+		v1.Use(middlewares.AuthMiddleware())
+		v1.GET("/user/me", controllers.GetUser)
+		v1.PATCH("/user/me", controllers.UpdateUser)
 	}
 
 	// Swagger route
