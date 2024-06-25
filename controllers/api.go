@@ -6,7 +6,6 @@ import (
 	"gotestbackend/middlewares"
 	"gotestbackend/models"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -36,6 +35,11 @@ func Register(c *gin.Context) {
 	database.DB.Where("username = ? ", newUser.Username).First(&userexists)
 	if userexists.ID > 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"Message": "User exist"})
+		return
+	}
+	database.DB.Where("account_number = ? ", newUser.AccountNumber).First(&userexists)
+	if userexists.ID > 0 {
+		c.JSON(http.StatusNotFound, gin.H{"Message": "Account Number exist"})
 		return
 	}
 	fmt.Println("pass :", newUser.Password)
@@ -238,7 +242,7 @@ func GetUser(c *gin.Context) {
 // @Failure      400     {object} map[string]string "message"
 // @Failure      401     {object} map[string]string "message"
 // @Failure      404     {object} map[string]string "message"
-// @Router       /user/me [pacth]
+// @Router       /user/me [patch]
 func UpdateUser(c *gin.Context) {
 	userId, exists := c.Get("user_id")
 	if !exists {
@@ -262,6 +266,12 @@ func UpdateUser(c *gin.Context) {
 		user.LastName = payload.LastName
 	}
 	if payload.AccountNumber != "" {
+		var userexists models.User
+		database.DB.Where("account_number = ? ", payload.AccountNumber).First(&userexists)
+		if userexists.ID > 0 {
+			c.JSON(http.StatusNotFound, gin.H{"Message": "Account Number exist"})
+			return
+		}
 		user.AccountNumber = payload.AccountNumber
 	}
 	if payload.Password != "" {
@@ -273,7 +283,7 @@ func UpdateUser(c *gin.Context) {
 }
 
 type transferRequest struct {
-	ID uint `json:"id"`
+	//ID uint `json:"id"`
 	//SenderAccount   string  `json:"sender_account"`
 	ReceiverAccount string  `json:"receiver_account"`
 	Amount          float64 `json:"amount"`
@@ -293,75 +303,72 @@ type transferRequest struct {
 // @Failure      500     {object} map[string]string "message"
 // @Router       /accounting/transfer [post]
 func Transfer(c *gin.Context) {
-	idparam := c.Param("user_id")
-	//Convert idparam to uint
-	userID, err := strconv.ParseUint(idparam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid user ID"})
+	idparam, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not logged in"})
+		return
+	}
+	// Convert userID to the appropriate type
+	userID, ok := idparam.(uint)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Invalid user ID"})
 		return
 	}
 	// Parse request body
 	var transferRequest transferRequest
-	transferRequest.ID = uint(userID)
 	if err := c.ShouldBindJSON(&transferRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-
 	// Implement transfer logic
 	// Check if sender and receiver IDs are valid
-	sender, err := GetDataUser(transferRequest.ID)
+	sender, err := GetDataUser(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Sender not found"})
 		return
 	}
-
 	receiver, err := GetDataUserByAccount(transferRequest.ReceiverAccount)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Receiver not found"})
 		return
 	}
-
 	// Update sender and receiver credits in database
 	// Validate if sender has enough credit
 	if sender.Credit < transferRequest.Amount {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Insufficient credit"})
 		return
 	}
-
 	// Perform credit transfer
 	// db.Model(&sender).Update("credit", sender.Credit - amount)
 	sender.Credit -= transferRequest.Amount
 	// db.Model(&receiver).Update("credit", receiver.Credit + amount)
 	receiver.Credit += transferRequest.Amount
-
 	// Update sender and receiver in database
 	err = database.DB.Save(&sender).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update sender"})
 		return
 	}
-
 	err = database.DB.Save(&receiver).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update receiver"})
 		return
 	}
-
 	// Record transaction
 	transaction := models.Transaction{
-		SenderID:   sender.ID,
-		ReceiverID: receiver.ID,
-		Amount:     transferRequest.Amount,
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
+		SenderID:          sender.ID,
+		SenderRemaining:   sender.Credit,
+		ReceiverID:        receiver.ID,
+		ReceiverRemaining: receiver.Credit,
+		Amount:            transferRequest.Amount,
+		CreatedAt:         time.Now(),
+		UpdatedAt:         time.Now(),
 	}
 	err = database.DB.Create(&transaction).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to record transaction"})
 		return
 	}
-
 	c.JSON(http.StatusOK, transaction)
 }
 
@@ -374,9 +381,11 @@ func GetDataUser(user_id uint) (models.User, error) {
 }
 func GetDataUserByAccount(account_number string) (models.User, error) {
 	var user models.User
-	if err := database.DB.First(&user, account_number).Error; err != nil {
+	if err := database.DB.Where("account_number = ?", account_number).First(&user).Error; err != nil {
 		return user, nil
 	}
+	fmt.Println("GetDataUserByAccount account_number : ", account_number)
+	fmt.Println("GetDataUserByAccount user : ", user.ID)
 	return user, nil
 }
 

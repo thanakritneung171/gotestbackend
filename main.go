@@ -50,7 +50,7 @@ func main() {
 		v1.POST("/user/login", controllers.Login) //
 		//v1.Use(middlewares.AuthMiddleware())
 		//7.
-		v1.GET("/user/me", controllers.GetUser)
+		v1.GET("/user/me", controllers.GetUser) //
 		//8.
 		v1.PATCH("/user/me", controllers.UpdateUser)
 		//9.
