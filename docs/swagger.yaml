@@ -32,10 +32,10 @@ definitions:
     properties:
       amount:
         type: number
-      id:
-        type: integer
       receiver_account:
-        description: SenderAccount   string  `json:"sender_account"`
+        description: |-
+          ID uint `json:"id"`
+          SenderAccount   string  `json:"sender_account"`
         type: string
     type: object
   models.ErrorResponse:
@@ -50,10 +50,14 @@ definitions:
         type: number
       created_at:
         type: string
+      ender_remaining:
+        type: number
       id:
         type: integer
       receiver_id:
         type: integer
+      receiver_remaining:
+        type: number
       sender_id:
         type: integer
       updated_at:
@@ -132,7 +136,7 @@ paths:
       description: GetTransferList retrieves the list of credit transfer history with
         optional filters
       parameters:
-      - description: TransferListRequest data
+      - description: 'date: ''2024-06-25'''
         in: body
         name: TransferListRequest
         required: true

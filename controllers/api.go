@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"gotestbackend/database"
 	"gotestbackend/middlewares"
 	"gotestbackend/models"
@@ -28,7 +27,12 @@ func Register(c *gin.Context) {
 	//fmt.Println("passhash :", string(hashedPassword))
 	if err := c.ShouldBindJSON(&newUser); err != nil {
 		//c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		c.JSON(http.StatusNotFound, gin.H{"Message": "Fail Register"})
+		c.JSON(http.StatusNotFound, gin.H{"Message": "Invalid input"})
+		return
+	}
+	// Validate AccountNumber
+	if !isValidAccountNumber(newUser.AccountNumber) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Account Number must be a 10-digit number"})
 		return
 	}
 	var userexists models.User
@@ -42,16 +46,29 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"Message": "Account Number exist"})
 		return
 	}
-	fmt.Println("pass :", newUser.Password)
+	//fmt.Println("pass :", newUser.Password)
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
 	newUser.Password = string(hashedPassword)
-	fmt.Println("pass hashedPassword:", newUser.Password)
+	//fmt.Println("pass hashedPassword:", newUser.Password)
 	// Simulate credit addition
 	newUser.Credit = 1000.0
-	// Save user to database (assuming db is initialized in main.go)
+	// Save user to database
 	database.DB.Create(&newUser)
 
 	c.JSON(http.StatusCreated, newUser)
+}
+
+// isValidAccountNumber validates if the account number is a 10-digit number
+func isValidAccountNumber(accountNumber string) bool {
+	if len(accountNumber) != 10 {
+		return false
+	}
+	for _, r := range accountNumber {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // @Summary      Get All User
@@ -212,7 +229,7 @@ func Login(c *gin.Context) {
 func GetUser(c *gin.Context) {
 	var user models.User
 	idparam, exists := c.Get("user_id")
-	fmt.Println("user_id ", idparam)
+	//fmt.Println("user_id ", idparam)
 	if !exists {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Message: "User ID not found in context"})
 		return
@@ -266,6 +283,11 @@ func UpdateUser(c *gin.Context) {
 		user.LastName = payload.LastName
 	}
 	if payload.AccountNumber != "" {
+		// Validate AccountNumber
+		if !isValidAccountNumber(payload.AccountNumber) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Account Number must be a 10-digit number"})
+			return
+		}
 		var userexists models.User
 		database.DB.Where("account_number = ? ", payload.AccountNumber).First(&userexists)
 		if userexists.ID > 0 {
@@ -384,15 +406,15 @@ func GetDataUserByAccount(account_number string) (models.User, error) {
 	if err := database.DB.Where("account_number = ?", account_number).First(&user).Error; err != nil {
 		return user, nil
 	}
-	fmt.Println("GetDataUserByAccount account_number : ", account_number)
-	fmt.Println("GetDataUserByAccount user : ", user.ID)
+	//fmt.Println("GetDataUserByAccount account_number : ", account_number)
+	//fmt.Println("GetDataUserByAccount user : ", user.ID)
 	return user, nil
 }
 
 // TransferListRequest defines the query parameters for transfer list API
 type TransferListRequest struct {
-	StartDate *time.Time `form:"start_date" time_format:"2006-01-02"`
-	EndDate   *time.Time `form:"end_date" time_format:"2006-01-02"`
+	StartDate string `json:"start_date" form:"start_date"`
+	EndDate   string `json:"end_date" form:"end_date"`
 }
 
 // GetTransferList retrieves the list of credit transfer history with optional filters
@@ -402,7 +424,7 @@ type TransferListRequest struct {
 // @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
-// @Param        TransferListRequest  body      TransferListRequest true  "TransferListRequest data"
+// @Param        TransferListRequest  body      TransferListRequest true  "date: '2024-06-25'"
 // @Success      200     {object} models.Transaction
 // @Failure      400     {object} map[string]string "message"
 // @Failure      401     {object} map[string]string "message"
@@ -415,22 +437,48 @@ func GetTransferList(c *gin.Context) {
 		return
 	}
 	var req TransferListRequest
-	if err := c.ShouldBindQuery(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid query parameters"})
 		return
 	}
 	// Prepare query conditions based on filters
+	//fmt.Println("StartDate =", string(req.StartDate))
+	//fmt.Println("EndDate =", string(req.EndDate))
+	layout := "2006-01-02"
+	var startDate, endDate *time.Time
+	if req.StartDate != "" {
+		parsedStartDate, err := time.Parse(layout, req.StartDate)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid start date"})
+			return
+		}
+		startDate = &parsedStartDate
+	}
+	if req.EndDate != "" {
+		parsedEndDate, err := time.Parse(layout, req.EndDate)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid end date"})
+			return
+		}
+		endDate = &parsedEndDate
+		*endDate = endDate.AddDate(0, 0, 1)
+	}
+	//fmt.Println("StartDate =", startDate)
+	//fmt.Println("EndDate =", endDate)
 	var transfers []models.Transaction
 	db := database.DB
 	query := db.Model(&models.Transaction{})
 	query = query.Where("sender_id = ? OR receiver_id = ?", userID, userID)
 	// Apply date filters if provided
-	if req.StartDate != nil && req.EndDate != nil {
-		query = query.Where("created_at BETWEEN ? AND ?", req.StartDate, req.EndDate)
-	} else if req.StartDate != nil {
-		query = query.Where("created_at >= ?", req.StartDate)
-	} else if req.EndDate != nil {
-		query = query.Where("created_at <= ?", req.EndDate)
+	if startDate != nil && endDate != nil {
+		query = query.Where("created_at BETWEEN ? AND ?", *startDate, *endDate)
+		//fmt.Println("BETWEEN")
+	} else if startDate != nil {
+		query = query.Where("created_at >= ?", *startDate)
+		//fmt.Println("StartDate != nil")
+	} else if endDate != nil {
+		query = query.Where("created_at < ?", *endDate)
+		//fmt.Println("EndDate != nil")
 	}
 	// Fetch transfers
 	err := query.Find(&transfers).Error

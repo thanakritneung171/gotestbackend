@@ -101,7 +101,7 @@ const docTemplate = `{
                 "summary": "getTransferList",
                 "parameters": [
                     {
-                        "description": "TransferListRequest data",
+                        "description": "date: '2024-06-25'",
                         "name": "TransferListRequest",
                         "in": "body",
                         "required": true,
@@ -613,11 +613,8 @@ const docTemplate = `{
                 "amount": {
                     "type": "number"
                 },
-                "id": {
-                    "type": "integer"
-                },
                 "receiver_account": {
-                    "description": "SenderAccount   string  ` + "`" + `json:\"sender_account\"` + "`" + `",
+                    "description": "ID uint ` + "`" + `json:\"id\"` + "`" + `\nSenderAccount   string  ` + "`" + `json:\"sender_account\"` + "`" + `",
                     "type": "string"
                 }
             }
@@ -640,11 +637,17 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "ender_remaining": {
+                    "type": "number"
+                },
                 "id": {
                     "type": "integer"
                 },
                 "receiver_id": {
                     "type": "integer"
+                },
+                "receiver_remaining": {
+                    "type": "number"
                 },
                 "sender_id": {
                     "type": "integer"
