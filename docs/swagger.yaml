@@ -28,6 +28,8 @@ definitions:
         type: integer
       last_name:
         type: string
+      password:
+        type: string
       username:
         type: string
     type: object
@@ -38,36 +40,8 @@ info:
   title: Thanakrit GOlang test Rest API
   version: "1.0"
 paths:
-  /register:
-    post:
-      consumes:
-      - application/json
-      description: Registers a new user with initial credit
-      parameters:
-      - description: User data
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/models.User'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.User'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Register a new user
-      tags:
-      - Auth
   /user/DeleteUserByID/{id}:
-    put:
+    delete:
       consumes:
       - application/json
       description: Update a  user
@@ -86,14 +60,16 @@ paths:
           schema:
             $ref: '#/definitions/models.User'
         "400":
-          description: Bad Request
+          description: message
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Update User By ID
       tags:
-      - User
+      - CRUD
   /user/GetUserByID/{id}:
     get:
       consumes:
@@ -124,7 +100,7 @@ paths:
       - BearerAuth: []
       summary: Get user by ID
       tags:
-      - User
+      - CRUD
   /user/UpdateUserByID/{id}:
     put:
       consumes:
@@ -145,14 +121,16 @@ paths:
           schema:
             $ref: '#/definitions/models.User'
         "400":
-          description: Bad Request
+          description: message
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Update User By ID
       tags:
-      - User
+      - CRUD
   /user/login:
     post:
       consumes:
@@ -175,31 +153,31 @@ paths:
               type: string
             type: object
         "400":
-          description: error
+          description: message
           schema:
             additionalProperties:
               type: string
             type: object
         "401":
-          description: error
+          description: message
           schema:
             additionalProperties:
               type: string
             type: object
         "500":
-          description: error
+          description: message
           schema:
             additionalProperties:
               type: string
             type: object
       summary: Logs in a user
       tags:
-      - auth
-  /user/profile:
+      - Auth
+  /user/me:
     get:
       consumes:
       - application/json
-      description: get user profile
+      description: Update user profile
       parameters:
       - description: User ID
         in: path
@@ -223,9 +201,40 @@ paths:
             $ref: '#/definitions/models.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Get by id
+      summary: UpdateUser by id token
       tags:
       - User
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user with initial credit
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Register a new user
+      tags:
+      - Auth
+      - CRUD
   /userAll:
     get:
       consumes:
@@ -237,18 +246,24 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.User'
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
         "400":
-          description: Bad Request
+          description: message
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "404":
-          description: Not Found
+          description: message
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Get All User
       tags:
-      - User
+      - CRUD
 swagger: "2.0"

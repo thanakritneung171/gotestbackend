@@ -5,6 +5,8 @@ import (
 	"gotestbackend/database"
 	"gotestbackend/middlewares"
 
+	//"gotestbackend/middlewares"
+
 	_ "gotestbackend/docs"
 
 	"github.com/gin-gonic/gin"
@@ -30,32 +32,29 @@ func main() {
 
 	r := gin.Default()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
 	// Routes
-	v1 := r.Group("/api")
-	v1.Use(middlewares.JWTAuthMiddleware())
+	v := r.Group("/api")
 	{
-
 		//CRUD
+		v.GET("/userAll", controllers.GetAllUser)
 		//5.
-		v1.POST("/user/register", controllers.Register)
-		v1.GET("/userAll", controllers.GetAllUser)
-		v1.GET("/user/GetUserByID/:id", controllers.GetUserByID)
-		v1.PUT("/user/UpdateUserByID/:id", controllers.UpdateUserByID)
-		v1.DELETE("/user/DeleteUserByID/:id", controllers.DeleteUserByID)
+		v.POST("/user/register", controllers.Register)
+		v.GET("/user/GetUserByID/:id", controllers.GetUserByID)
+		v.PUT("/user/UpdateUserByID/:id", controllers.UpdateUserByID)
+		v.DELETE("/user/DeleteUserByID/:id", controllers.DeleteUserByID)
 		//CRUD
-
-		//7.
-		v1.GET("/user/profile/:id", controllers.GetUserProfile)
-
-		// Authenticated routes
+	}
+	v1 := r.Group("/api").Use(middlewares.JWTAuthMiddleware())
+	{
 		//6.
-		v1.POST("/user/login", controllers.Login)
+		v1.POST("/user/login", controllers.Login) //
 		//v1.Use(middlewares.AuthMiddleware())
+		//7.
+		v1.GET("/user/me", controllers.GetUser)
 		//8.
 		v1.PATCH("/user/me", controllers.UpdateUser)
 		//9.
-		v1.POST("/accounting/transfer", controllers.TransferCredit)
+		v1.POST("/accounting/transfer", controllers.Transfer)
 		//10.
 		v1.GET("/accounting/transfer-list", controllers.GetTransferList)
 	}

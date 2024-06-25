@@ -3,6 +3,8 @@ package database
 import (
 	"gotestbackend/models"
 	"log"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func InsertSampleUser() {
@@ -17,16 +19,16 @@ func InsertSampleUser() {
 		return
 	}
 	users := []models.User{
-		{Username: "user1", Password: "password1", FirstName: "John", LastName: "Doe", AccountNumber: "111111"},
-		{Username: "user2", Password: "password2", FirstName: "Jane", LastName: "Doe", AccountNumber: "222222"},
-		{Username: "user3", Password: "password3", FirstName: "Alice", LastName: "Smith", AccountNumber: "333333"},
-		{Username: "user4", Password: "password4", FirstName: "Bob", LastName: "Brown", AccountNumber: "444444"},
-		{Username: "user5", Password: "password5", FirstName: "Charlie", LastName: "Davis", AccountNumber: "555555"},
-		{Username: "user6", Password: "password6", FirstName: "David", LastName: "Evans", AccountNumber: "666666"},
-		{Username: "user7", Password: "password7", FirstName: "Ella", LastName: "Green", AccountNumber: "777777"},
-		{Username: "user8", Password: "password8", FirstName: "Frank", LastName: "Harris", AccountNumber: "888888"},
-		{Username: "user9", Password: "password9", FirstName: "Grace", LastName: "Johnson", AccountNumber: "999999"},
-		{Username: "user10", Password: "password10", FirstName: "Henry", LastName: "Lee", AccountNumber: "101010"},
+		{Username: "user1", Password: hashPassword("password1"), FirstName: "John", LastName: "Doe", AccountNumber: "111111"},
+		{Username: "user2", Password: hashPassword("password2"), FirstName: "Jane", LastName: "Doe", AccountNumber: "222222"},
+		{Username: "user3", Password: hashPassword("password3"), FirstName: "Alice", LastName: "Smith", AccountNumber: "333333"},
+		{Username: "user4", Password: hashPassword("password4"), FirstName: "Bob", LastName: "Brown", AccountNumber: "444444"},
+		{Username: "user5", Password: hashPassword("password5"), FirstName: "Charlie", LastName: "Davis", AccountNumber: "555555"},
+		{Username: "user6", Password: hashPassword("password6"), FirstName: "David", LastName: "Evans", AccountNumber: "666666"},
+		{Username: "user7", Password: hashPassword("password7"), FirstName: "Ella", LastName: "Green", AccountNumber: "777777"},
+		{Username: "user8", Password: hashPassword("password8"), FirstName: "Frank", LastName: "Harris", AccountNumber: "888888"},
+		{Username: "user9", Password: hashPassword("password9"), FirstName: "Grace", LastName: "Johnson", AccountNumber: "999999"},
+		{Username: "user10", Password: hashPassword("password10"), FirstName: "Henry", LastName: "Lee", AccountNumber: "101010"},
 	}
 
 	for _, user := range users {
@@ -69,4 +71,13 @@ func InsertSampleTransaction() {
 			log.Printf("Could not insert transaction from user %d to user %d: %v", transaction.SenderID, transaction.ReceiverID, err)
 		}
 	}
+}
+
+// Hash password using bcrypt
+func hashPassword(password string) string {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatalf("Failed to hash password: %v", err)
+	}
+	return string(hashedPassword)
 }

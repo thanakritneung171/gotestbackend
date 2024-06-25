@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"gotestbackend/database"
 	"gotestbackend/middlewares"
 	"gotestbackend/models"
@@ -14,23 +15,33 @@ import (
 
 // @Summary      Register a new user
 // @Description  Registers a new user with initial credit
-// @Tags         Auth
+// @Tags         Auth , CRUD
 // @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        user  body      models.User  true  "User data"
 // @Success      201    {object}  models.User
-// @Failure      400    {object}  models.ErrorResponse
+// @Failure      400    {object}  map[string]string "message"
+// @Failure      401    {object}  map[string]string "message"
 // @Router       /user/register [post]
 func Register(c *gin.Context) {
 	var newUser models.User
-	// hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
-	// newUser.Password = string(hashedPassword)
+	//fmt.Println("passhash :", string(hashedPassword))
 	if err := c.ShouldBindJSON(&newUser); err != nil {
 		//c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		c.JSON(http.StatusNotFound, models.ErrorResponse{Message: "Fail Register"})
+		c.JSON(http.StatusNotFound, gin.H{"Message": "Fail Register"})
 		return
 	}
+	var userexists models.User
+	database.DB.Where("username = ? ", newUser.Username).First(&userexists)
+	if userexists.ID > 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"Message": "User exist"})
+		return
+	}
+	fmt.Println("pass :", newUser.Password)
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
+	newUser.Password = string(hashedPassword)
+	fmt.Println("pass hashedPassword:", newUser.Password)
 	// Simulate credit addition
 	newUser.Credit = 1000.0
 	// Save user to database (assuming db is initialized in main.go)
@@ -41,16 +52,15 @@ func Register(c *gin.Context) {
 
 // @Summary      Get All User
 // @Description  Get details all user
-// @Tags 		 User
+// @Tags 		 CRUD
 // @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
-// @Success      200     {object} models.User
-// @Failure      400     {object} models.ErrorResponse
-// @Failure      404     {object} models.ErrorResponse
+// @Success      200     {object} []models.User
+// @Failure      404     {object} map[string]string "message"
 // @Router       /userAll [get]
 func GetAllUser(c *gin.Context) {
-	var user models.User
+	var user []models.User
 	if err := database.DB.Find(&user).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"Message": "All record not found"})
 		return
@@ -61,13 +71,12 @@ func GetAllUser(c *gin.Context) {
 // GetUser retrieves the logged-in user's details
 // @Summary      Get user by ID
 // @Description  Get details of a user by their ID
-// @Tags 		 User
+// @Tags 		 CRUD
 // @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        id      path    string  true  "User ID"
 // @Success      200     {object} models.User
-// @Failure      400     {object} models.ErrorResponse
 // @Failure      404     {object} models.ErrorResponse
 // @Router       /user/GetUserByID/{id} [get]
 func GetUserByID(c *gin.Context) {
@@ -81,25 +90,26 @@ func GetUserByID(c *gin.Context) {
 }
 
 // @Summary      Update User By ID
-// @Description  Update a  user
-// @Tags         User
+// @Description  Update a user
+// @Tags         CRUD
 // @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        user  body      models.User  true  "User data"
 // @Success      201    {object}  models.User
-// @Failure      400    {object}  models.ErrorResponse
+// @Failure      400    {object}  map[string]string "message"
+// @Failure      404    {object}  map[string]string "message"
 // @Router       /user/UpdateUserByID/{id} [put]
 func UpdateUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
 	if err := database.DB.First(&user, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "User not found"})
 		return
 	}
 	var updatedUser models.User
 	if err := c.ShouldBindJSON(&updatedUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 	// Update user fields
@@ -110,19 +120,19 @@ func UpdateUserByID(c *gin.Context) {
 
 // @Summary      Update User By ID
 // @Description  Update a  user
-// @Tags         User
+// @Tags         CRUD
 // @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
-// @Param        user  body      models.User  true  "User data"
-// @Success      201    {object}  models.User
-// @Failure      400    {object}  models.ErrorResponse
-// @Router       /user/DeleteUserByID/{id} [put]
+// @Param        id      path    string  true  "User ID"
+// @Success      201    {object}  map[string]string "message"
+// @Failure      400    {object}  map[string]string "message"
+// @Router       /user/DeleteUserByID/{id} [delete]
 func DeleteUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
 	if err := database.DB.First(&user, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "User not found"})
 		return
 	}
 	// Delete user
@@ -145,95 +155,106 @@ type UpdateUserPayload struct {
 }
 
 // Login godoc
-// @Summary Logs in a user
+// @Summary login
 // @Description Authenticates a user and returns a JWT token
 // @Tags Auth
 // @Accept  json
 // @Produce  json
 // @Param payload body LoginPayload true "Login payload"
 // @Success 200 {object} map[string]string "token"
-// @Failure 400 {object} map[string]string "error"
-// @Failure 401 {object} map[string]string "error"
-// @Failure 500 {object} map[string]string "error"
+// @Failure 400 {object} map[string]string "message"
+// @Failure 401 {object} map[string]string "message"
+// @Failure 500 {object} map[string]string "message"
 // @Router /user/login [post]
 func Login(c *gin.Context) {
 	var payload LoginPayload
 	var user models.User
 
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-
-	if err := database.DB.Where("username = ? AND password = ?", payload.Username, payload.Password).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-		return
+	database.DB.Where("username =?", payload.Username).First(&user)
+	if user.ID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "user dose not exists"})
 	}
 
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
+		return
+	} else {
+		c.JSON(http.StatusUnauthorized, gin.H{"Message": "pass login"})
+	}
+	//fmt.Println("User ID = ", user.ID)
 	token, err := middlewares.GenerateToken(user.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Could not generate token"})
 		return
 	}
-	// if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password)); err != nil {
-	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-	// 	return
-	// }
-
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{"token": token}) //token
 }
 
 // GetUser retrieves the logged-in user's details
-// @Summary      Get by id
-// @Description  get user profile
+// @Summary      getUser
+// @Description  GetUserProfile by id token
 // @Tags         User
 // @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
-// @Param        id      path    string  true  "User ID"
 // @Success      200     {object} models.User
 // @Failure      400     {object} models.ErrorResponse
 // @Failure      404     {object} models.ErrorResponse
-// @Router       /user/profile [get]
-func GetUserProfile(c *gin.Context) {
+// @Router       /user/me [get]
+func GetUser(c *gin.Context) {
 	var user models.User
-	idparam := c.Param("user_id")
-
-	//Convert idparam to uint
-	userID, err := strconv.ParseUint(idparam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponse{Message: "Invalid user ID"})
+	idparam, exists := c.Get("user_id")
+	fmt.Println("user_id ", idparam)
+	if !exists {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Message: "User ID not found in context"})
 		return
 	}
-
+	// Convert userID to the appropriate type
+	userID, ok := idparam.(uint)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Message: "User ID type assertion failed"})
+		return
+	}
 	if err := database.DB.First(&user, userID).Error; err != nil {
 		c.JSON(http.StatusNotFound, models.ErrorResponse{Message: "User not found"})
 		return
 	}
-
 	c.JSON(http.StatusOK, user)
 }
 
 // UpdateUser updates the logged-in user's details
+// @Summary      updateUser
+// @Description  UpdateUser by id token
+// @Tags         User
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        user  body      UpdateUserPayload  true  "UserPayload data"
+// @Success      200     {object} models.User
+// @Failure      400     {object} map[string]string "message"
+// @Failure      401     {object} map[string]string "message"
+// @Failure      404     {object} map[string]string "message"
+// @Router       /user/me [pacth]
 func UpdateUser(c *gin.Context) {
 	userId, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not logged in"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not logged in"})
 		return
 	}
-
 	var payload UpdateUserPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-
 	var user models.User
 	if err := database.DB.First(&user, userId).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "User not found"})
 		return
 	}
-
 	if payload.FirstName != "" {
 		user.FirstName = payload.FirstName
 	}
@@ -247,33 +268,43 @@ func UpdateUser(c *gin.Context) {
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 		user.Password = string(hashedPassword)
 	}
-
 	database.DB.Save(&user)
 	c.JSON(http.StatusOK, user)
 }
 
-// api/accounting.go
-// TransferCredit transfers credit from one user to another
-func TransferCredit(c *gin.Context) {
-	idparam := c.Param("user_id")
+type transferRequest struct {
+	ID uint `json:"id"`
+	//SenderAccount   string  `json:"sender_account"`
+	ReceiverAccount string  `json:"receiver_account"`
+	Amount          float64 `json:"amount"`
+}
 
+// TransferCredit transfers credit from one user to another
+// @Summary      transfer
+// @Description  TransferCredit transfers credit from one user to another
+// @Tags         accounting
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        transferRequest  body      transferRequest true  "transferRequest data"
+// @Success      200     {object} models.Transaction
+// @Failure      400     {object} map[string]string "message"
+// @Failure      404     {object} map[string]string "message"
+// @Failure      500     {object} map[string]string "message"
+// @Router       /accounting/transfer [post]
+func Transfer(c *gin.Context) {
+	idparam := c.Param("user_id")
 	//Convert idparam to uint
 	userID, err := strconv.ParseUint(idparam, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponse{Message: "Invalid user ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid user ID"})
 		return
 	}
-
 	// Parse request body
-	var transferRequest struct {
-		ID uint `json:"id"`
-		//SenderAccount   string  `json:"sender_account"`
-		ReceiverAccount string  `json:"receiver_account"`
-		Amount          float64 `json:"amount"`
-	}
+	var transferRequest transferRequest
 	transferRequest.ID = uint(userID)
 	if err := c.ShouldBindJSON(&transferRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -281,20 +312,20 @@ func TransferCredit(c *gin.Context) {
 	// Check if sender and receiver IDs are valid
 	sender, err := GetDataUser(transferRequest.ID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Sender not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Sender not found"})
 		return
 	}
 
 	receiver, err := GetDataUserByAccount(transferRequest.ReceiverAccount)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Receiver not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Receiver not found"})
 		return
 	}
 
 	// Update sender and receiver credits in database
 	// Validate if sender has enough credit
 	if sender.Credit < transferRequest.Amount {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient credit"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Insufficient credit"})
 		return
 	}
 
@@ -307,13 +338,13 @@ func TransferCredit(c *gin.Context) {
 	// Update sender and receiver in database
 	err = database.DB.Save(&sender).Error
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update sender"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update sender"})
 		return
 	}
 
 	err = database.DB.Save(&receiver).Error
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update receiver"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update receiver"})
 		return
 	}
 
@@ -327,12 +358,13 @@ func TransferCredit(c *gin.Context) {
 	}
 	err = database.DB.Create(&transaction).Error
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record transaction"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to record transaction"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Transfer successful"})
+	c.JSON(http.StatusOK, transaction)
 }
+
 func GetDataUser(user_id uint) (models.User, error) {
 	var user models.User
 	if err := database.DB.First(&user, user_id).Error; err != nil {
@@ -355,15 +387,27 @@ type TransferListRequest struct {
 }
 
 // GetTransferList retrieves the list of credit transfer history with optional filters
+// @Summary      getTransferList
+// @Description  GetTransferList retrieves the list of credit transfer history with optional filters
+// @Tags         accounting
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        TransferListRequest  body      TransferListRequest true  "TransferListRequest data"
+// @Success      200     {object} models.Transaction
+// @Failure      400     {object} map[string]string "message"
+// @Failure      401     {object} map[string]string "message"
+// @Failure      500     {object} map[string]string "message"
+// @Router       /accounting/transfer-list [get]
 func GetTransferList(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not authenticated"})
 		return
 	}
 	var req TransferListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid query parameters"})
 		return
 	}
 	// Prepare query conditions based on filters
@@ -385,5 +429,5 @@ func GetTransferList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch transfer history"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"transfers": transfers})
+	c.JSON(http.StatusOK, transfers)
 }

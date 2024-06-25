@@ -15,53 +15,8 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/register": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Registers a new user with initial credit",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Register a new user",
-                "parameters": [
-                    {
-                        "description": "User data",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.User"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.User"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/user/DeleteUserByID/{id}": {
-            "put": {
+            "delete": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -75,7 +30,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "CRUD"
                 ],
                 "summary": "Update User By ID",
                 "parameters": [
@@ -97,9 +52,12 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "message",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -120,7 +78,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "CRUD"
                 ],
                 "summary": "Get user by ID",
                 "parameters": [
@@ -169,7 +127,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "CRUD"
                 ],
                 "summary": "Update User By ID",
                 "parameters": [
@@ -191,9 +149,12 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "message",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -209,7 +170,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Logs in a user",
                 "parameters": [
@@ -234,7 +195,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "error",
+                        "description": "message",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -243,7 +204,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "error",
+                        "description": "message",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -252,7 +213,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "error",
+                        "description": "message",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -263,14 +224,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/profile": {
+        "/user/me": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "get user profile",
+                "description": "Update user profile",
                 "consumes": [
                     "application/json"
                 ],
@@ -280,7 +241,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Get by id",
+                "summary": "UpdateUser by id token",
                 "parameters": [
                     {
                         "type": "string",
@@ -312,6 +273,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/register": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Registers a new user with initial credit",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth",
+                    "CRUD"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "User data",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/userAll": {
             "get": {
                 "security": [
@@ -327,26 +337,35 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "CRUD"
                 ],
                 "summary": "Get All User",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.User"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "message",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "message",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -394,6 +413,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "last_name": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 },
                 "username": {

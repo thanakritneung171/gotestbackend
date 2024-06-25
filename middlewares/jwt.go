@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -17,14 +18,12 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization format must be Bearer {token}"})
 			c.Abort()
 			return
 		}
-
 		tokenString := parts[1]
 		token, claims, err := ParseToken(tokenString)
 		if err != nil || !token.Valid {
@@ -32,14 +31,15 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
 		// Set user ID to context
+		fmt.Println("JWTAuthMiddleware userID=", claims.UserID)
 		c.Set("user_id", claims.UserID)
 		c.Next()
 	}
 }
 
-var jwtSecret = []byte("your_secret_key")
+// neung with sha256 hex
+var jwtSecret = []byte("9e21758d56efc1bde0694e859a9f350c305f6901063a8c07b0384ff13f76b051")
 
 type Claims struct {
 	UserID uint `json:"user_id"`
