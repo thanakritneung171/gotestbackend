@@ -53,7 +53,7 @@ func GenerateToken(userID uint) (string, error) {
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
 			IssuedAt:  time.Now().Unix(),
-			Issuer:    "your-app",
+			Issuer:    "gotestbackend",
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

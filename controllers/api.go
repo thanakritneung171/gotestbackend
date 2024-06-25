@@ -12,12 +12,23 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// @Summary      Register a new user
+// @Description  Registers a new user with initial credit
+// @Tags         Auth
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User data"
+// @Success      201    {object}  models.User
+// @Failure      400    {object}  models.ErrorResponse
+// @Router       /user/register [post]
 func Register(c *gin.Context) {
 	var newUser models.User
 	// hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
 	// newUser.Password = string(hashedPassword)
 	if err := c.ShouldBindJSON(&newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		//c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Message: "Fail Register"})
 		return
 	}
 	// Simulate credit addition
@@ -28,10 +39,20 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, newUser)
 }
 
+// @Summary      Get All User
+// @Description  Get details all user
+// @Tags 		 User
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Success      200     {object} models.User
+// @Failure      400     {object} models.ErrorResponse
+// @Failure      404     {object} models.ErrorResponse
+// @Router       /userAll [get]
 func GetAllUser(c *gin.Context) {
 	var user models.User
 	if err := database.DB.Find(&user).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "All record not found"})
+		c.JSON(http.StatusNotFound, gin.H{"Message": "All record not found"})
 		return
 	}
 	c.JSON(http.StatusOK, user)
@@ -40,7 +61,8 @@ func GetAllUser(c *gin.Context) {
 // GetUser retrieves the logged-in user's details
 // @Summary      Get user by ID
 // @Description  Get details of a user by their ID
-// @Tags 		 users
+// @Tags 		 User
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        id      path    string  true  "User ID"
@@ -52,12 +74,22 @@ func GetUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
 	if err := database.DB.First(&user, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, models.ErrorResponse{Message: "User not found1111"})
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Message: "User not found"})
 		return
 	}
 	c.JSON(http.StatusOK, user)
 }
 
+// @Summary      Update User By ID
+// @Description  Update a  user
+// @Tags         User
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User data"
+// @Success      201    {object}  models.User
+// @Failure      400    {object}  models.ErrorResponse
+// @Router       /user/UpdateUserByID/{id} [put]
 func UpdateUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
@@ -76,6 +108,16 @@ func UpdateUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// @Summary      Update User By ID
+// @Description  Update a  user
+// @Tags         User
+// @Security 	 BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User data"
+// @Success      201    {object}  models.User
+// @Failure      400    {object}  models.ErrorResponse
+// @Router       /user/DeleteUserByID/{id} [put]
 func DeleteUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
@@ -102,7 +144,18 @@ type UpdateUserPayload struct {
 	AccountNumber string `json:"account_number"`
 }
 
-// Login handles user login
+// Login godoc
+// @Summary Logs in a user
+// @Description Authenticates a user and returns a JWT token
+// @Tags Auth
+// @Accept  json
+// @Produce  json
+// @Param payload body LoginPayload true "Login payload"
+// @Success 200 {object} map[string]string "token"
+// @Failure 400 {object} map[string]string "error"
+// @Failure 401 {object} map[string]string "error"
+// @Failure 500 {object} map[string]string "error"
+// @Router /user/login [post]
 func Login(c *gin.Context) {
 	var payload LoginPayload
 	var user models.User
@@ -133,7 +186,8 @@ func Login(c *gin.Context) {
 // GetUser retrieves the logged-in user's details
 // @Summary      Get by id
 // @Description  get user profile
-// @Tags         user
+// @Tags         User
+// @Security 	 BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        id      path    string  true  "User ID"
