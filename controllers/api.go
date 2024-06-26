@@ -202,13 +202,12 @@ func Login(c *gin.Context) {
 	database.DB.Where("username =?", payload.Username).First(&user)
 	if user.ID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "user dose not exists"})
+		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
 		return
-	} else {
-		c.JSON(http.StatusUnauthorized, gin.H{"Message": "pass login"})
 	}
 	//fmt.Println("User ID = ", user.ID)
 	token, err := middlewares.GenerateToken(user.ID)

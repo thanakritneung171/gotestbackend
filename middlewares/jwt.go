@@ -1,14 +1,13 @@
 package middlewares
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/hexops/valast"
+	//"github.com/hexops/valast"
 )
 
 func JWTAuthMiddleware() gin.HandlerFunc {
@@ -33,7 +32,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 		// Set user ID to context
-		fmt.Println("JWTAuthMiddleware userID=", claims.UserID)
+		//fmt.Println("JWTAuthMiddleware userID=", claims.UserID)
 		c.Set("user_id", claims.UserID)
 		c.Next()
 	}
@@ -57,8 +56,8 @@ func GenerateToken(userID uint) (string, error) {
 			Issuer:    "gotestbackend",
 		},
 	}
-	fmt.Println("GenerateToken")
-	fmt.Println(valast.String(claims))
+	//fmt.Println("GenerateToken")
+	//fmt.Println(valast.String(claims))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtSecret)
 }
