@@ -8,6 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/hexops/valast"
 )
 
 func JWTAuthMiddleware() gin.HandlerFunc {
@@ -56,6 +57,8 @@ func GenerateToken(userID uint) (string, error) {
 			Issuer:    "gotestbackend",
 		},
 	}
+	fmt.Println("GenerateToken")
+	fmt.Println(valast.String(claims))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtSecret)
 }
@@ -68,3 +71,24 @@ func ParseToken(tokenString string) (*jwt.Token, *Claims, error) {
 	})
 	return token, claims, err
 }
+
+/*
+Encoded
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3MTk0NDY1OTIsImlhdCI6MTcxOTM2MDE5MiwiaXNzIjoiZ290ZXN0YmFja2VuZCJ9.B5Cg8CupC1oWkvqazd4gVKDd375NUbiMUb6aUjriLN8
+
+HEADER
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+
+PAYLOAD
+{
+  "user_id": 1,
+  "exp": 1719446592,
+  "iat": 1719360192,
+  "iss": "gotestbackend"
+}
+
+*/

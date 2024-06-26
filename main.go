@@ -43,12 +43,12 @@ func main() {
 		v.PUT("/user/UpdateUserByID/:id", controllers.UpdateUserByID)
 		v.DELETE("/user/DeleteUserByID/:id", controllers.DeleteUserByID)
 		//CRUD
+		//6.
+		v.POST("/user/login", controllers.Login) //
+		//v1.Use(middlewares.AuthMiddleware())
 	}
 	v1 := r.Group("/api").Use(middlewares.JWTAuthMiddleware())
 	{
-		//6.
-		v1.POST("/user/login", controllers.Login) //
-		//v1.Use(middlewares.AuthMiddleware())
 		//7.
 		v1.GET("/user/me", controllers.GetUser) //
 		//8.
