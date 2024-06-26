@@ -19,16 +19,16 @@ func InsertSampleUser() {
 		return
 	}
 	users := []models.User{
-		{Username: "user1", Password: hashPassword("password1"), FirstName: "John", LastName: "Doe", AccountNumber: "111111"},
-		{Username: "user2", Password: hashPassword("password2"), FirstName: "Jane", LastName: "Doe", AccountNumber: "222222"},
-		{Username: "user3", Password: hashPassword("password3"), FirstName: "Alice", LastName: "Smith", AccountNumber: "333333"},
-		{Username: "user4", Password: hashPassword("password4"), FirstName: "Bob", LastName: "Brown", AccountNumber: "444444"},
-		{Username: "user5", Password: hashPassword("password5"), FirstName: "Charlie", LastName: "Davis", AccountNumber: "555555"},
-		{Username: "user6", Password: hashPassword("password6"), FirstName: "David", LastName: "Evans", AccountNumber: "666666"},
-		{Username: "user7", Password: hashPassword("password7"), FirstName: "Ella", LastName: "Green", AccountNumber: "777777"},
-		{Username: "user8", Password: hashPassword("password8"), FirstName: "Frank", LastName: "Harris", AccountNumber: "888888"},
-		{Username: "user9", Password: hashPassword("password9"), FirstName: "Grace", LastName: "Johnson", AccountNumber: "999999"},
-		{Username: "user10", Password: hashPassword("password10"), FirstName: "Henry", LastName: "Lee", AccountNumber: "101010"},
+		{Username: "user1", Password: hashPassword("password1"), FirstName: "John", LastName: "Doe", AccountNumber: "1111111111"},
+		{Username: "user2", Password: hashPassword("password2"), FirstName: "Jane", LastName: "Doe", AccountNumber: "2222222222"},
+		{Username: "user3", Password: hashPassword("password3"), FirstName: "Alice", LastName: "Smith", AccountNumber: "3333333333"},
+		{Username: "user4", Password: hashPassword("password4"), FirstName: "Bob", LastName: "Brown", AccountNumber: "4444444444"},
+		{Username: "user5", Password: hashPassword("password5"), FirstName: "Charlie", LastName: "Davis", AccountNumber: "5555555555"},
+		{Username: "user6", Password: hashPassword("password6"), FirstName: "David", LastName: "Evans", AccountNumber: "6666666666"},
+		{Username: "user7", Password: hashPassword("password7"), FirstName: "Ella", LastName: "Green", AccountNumber: "7777777777"},
+		{Username: "user8", Password: hashPassword("password8"), FirstName: "Frank", LastName: "Harris", AccountNumber: "8888888888"},
+		{Username: "user9", Password: hashPassword("password9"), FirstName: "Grace", LastName: "Johnson", AccountNumber: "9999999999"},
+		{Username: "user10", Password: hashPassword("password10"), FirstName: "Henry", LastName: "Lee", AccountNumber: "1010101010"},
 	}
 
 	for _, user := range users {
