@@ -258,6 +258,13 @@ const docTemplate = `{
                 "summary": "Update User By ID",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "description": "User data",
                         "name": "user",
                         "in": "body",

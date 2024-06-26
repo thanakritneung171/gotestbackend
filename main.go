@@ -22,13 +22,13 @@ var (
 //	@version		1.0
 //	@description	This is a sample server for a Gin REST API. \n Authorize  use Bearer {token from login} \n example  "Bearer eyJhbGciOiJIUzI"
 
-// @host		localhost:8080
-// @BasePath	/api
+//	@host		localhost:8080
+//	@BasePath	/api
 
-// @securityDefinitions.apikey BearerAuth
-// @type apiKey
-// @in header
-// @name Authorization
+//	@securityDefinitions.apikey	BearerAuth
+//	@type						apiKey
+//	@in							header
+//	@name						Authorization
 
 func main() {
 
