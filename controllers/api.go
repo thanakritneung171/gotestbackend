@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"gotestbackend/database"
 	"gotestbackend/middlewares"
 	"gotestbackend/models"
@@ -446,9 +447,11 @@ type TransferListRequest struct {
 //	@Description	GetTransferList retrieves the list of credit transfer history with optional filters
 //	@Tags			accounting
 //	@Security		BearerAuth
-//	@Accept			json
 //	@Produce		json
-//	@Param			TransferListRequest	body		TransferListRequest	false	"date: '2024-06-25'"
+//
+// @Param  start_date  query  string  false  "Start Date : '2024-06-25'"
+// @Param  end_date    query  string  false  "End Date : '2024-06-25'"
+//
 //	@Success		200					{object}	models.Transaction
 //	@Failure		400					{object}	map[string]string	"message"
 //	@Failure		401					{object}	map[string]string	"message"
@@ -460,49 +463,57 @@ func GetTransferList(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not authenticated"})
 		return
 	}
-	var req TransferListRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid query parameters"})
-		return
-	}
+	// Adjust the function to parse query parameters
+	start := c.Query("start_date")
+	end := c.Query("end_date")
+
+	// var req TransferListRequest
+	// if err := c.ShouldBindJSON(&req); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid query parameters"})
+	// 	return
+	// }
 	// Prepare query conditions based on filters
 	//fmt.Println("StartDate =", string(req.StartDate))
 	//fmt.Println("EndDate =", string(req.EndDate))
+	fmt.Println("start =", string(start))
+	fmt.Println("End =", string(end))
 	layout := "2006-01-02"
 	var startDate, endDate *time.Time
-	if req.StartDate != "" {
-		parsedStartDate, err := time.Parse(layout, req.StartDate)
+	if start != "" {
+		parsedStartDate, err := time.Parse(layout, start)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid start date"})
 			return
 		}
-		startDate = &parsedStartDate
+		// Normalize startDate to the beginning of the specified date
+		normalizedStartDate := time.Date(parsedStartDate.Year(), parsedStartDate.Month(), parsedStartDate.Day(), 0, 0, 0, 0, parsedStartDate.Location())
+		startDate = &normalizedStartDate
+		fmt.Println("StartDate =", startDate.Format("2006-01-02"))
 	}
-	if req.EndDate != "" {
-		parsedEndDate, err := time.Parse(layout, req.EndDate)
+
+	if end != "" {
+		parsedEndDate, err := time.Parse(layout, end)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid end date"})
 			return
 		}
-		endDate = &parsedEndDate
-		*endDate = endDate.AddDate(0, 0, 1)
+		// Normalize endDate to the end of the specified date
+		normalizedEndDate := time.Date(parsedEndDate.Year(), parsedEndDate.Month(), parsedEndDate.Day(), 23, 59, 59, 999999999, parsedEndDate.Location())
+		endDate = &normalizedEndDate
+		fmt.Println("EndDate =", endDate.Format("2006-01-02"))
 	}
-	//fmt.Println("StartDate =", startDate)
-	//fmt.Println("EndDate =", endDate)
 	var transfers []models.Transaction
 	db := database.DB
 	query := db.Model(&models.Transaction{})
 	query = query.Where("sender_id = ? OR receiver_id = ?", userID, userID)
 	// Apply date filters if provided
 	if startDate != nil && endDate != nil {
-		query = query.Where("created_at BETWEEN ? AND ?", *startDate, *endDate)
-		//fmt.Println("BETWEEN")
+		query = query.Where("created_at BETWEEN ? AND ?", startDate, endDate)
+		//query = query.Where("created_at >= ? AND created_at < ?", *startDate, *endDate)
 	} else if startDate != nil {
-		query = query.Where("created_at >= ?", *startDate)
-		//fmt.Println("StartDate != nil")
+		query = query.Where("created_at >= ?", startDate)
 	} else if endDate != nil {
-		query = query.Where("created_at < ?", *endDate)
-		//fmt.Println("EndDate != nil")
+		query = query.Where("created_at <= ?", endDate)
 	}
 	// Fetch transfers
 	err := query.Find(&transfers).Error

@@ -89,9 +89,6 @@ const docTemplate = `{
                     }
                 ],
                 "description": "GetTransferList retrieves the list of credit transfer history with optional filters",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -101,12 +98,16 @@ const docTemplate = `{
                 "summary": "getTransferList",
                 "parameters": [
                     {
-                        "description": "date: '2024-06-25'",
-                        "name": "TransferListRequest",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/controllers.TransferListRequest"
-                        }
+                        "type": "string",
+                        "description": "Start Date : '2024-06-25'",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date : '2024-06-25'",
+                        "name": "end_date",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -580,17 +581,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.TransferListRequest": {
-            "type": "object",
-            "properties": {
-                "end_date": {
-                    "type": "string"
-                },
-                "start_date": {
                     "type": "string"
                 }
             }

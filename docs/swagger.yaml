@@ -10,13 +10,6 @@ definitions:
     - password
     - username
     type: object
-  controllers.TransferListRequest:
-    properties:
-      end_date:
-        type: string
-      start_date:
-        type: string
-    type: object
   controllers.UpdateUserPayload:
     properties:
       account_number:
@@ -135,16 +128,17 @@ paths:
       - accounting
   /accounting/transfer-list:
     get:
-      consumes:
-      - application/json
       description: GetTransferList retrieves the list of credit transfer history with
         optional filters
       parameters:
-      - description: 'date: ''2024-06-25'''
-        in: body
-        name: TransferListRequest
-        schema:
-          $ref: '#/definitions/controllers.TransferListRequest'
+      - description: 'Start Date : ''2024-06-25'''
+        in: query
+        name: start_date
+        type: string
+      - description: 'End Date : ''2024-06-25'''
+        in: query
+        name: end_date
+        type: string
       produces:
       - application/json
       responses:
