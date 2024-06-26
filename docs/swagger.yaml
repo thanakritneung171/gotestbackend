@@ -64,8 +64,11 @@ definitions:
         type: string
     type: object
   models.User:
+    description: User represents the entity of a user with basic information like
+      username, personal details, account number, and credit balance.
     properties:
       account_number:
+        description: '@description The account number associated with the user.'
         type: string
       credit:
         type: number
@@ -83,7 +86,8 @@ definitions:
 host: localhost:8080
 info:
   contact: {}
-  description: This is a sample server for a Gin REST API.
+  description: This is a sample server for a Gin REST API. \n Authorize  use Bearer
+    {token from login} \n example  "Bearer eyJhbGciOiJIUzI"
   title: Thanakrit GOlang test Rest API
   version: "1.0"
 paths:
@@ -139,7 +143,6 @@ paths:
       - description: 'date: ''2024-06-25'''
         in: body
         name: TransferListRequest
-        required: true
         schema:
           $ref: '#/definitions/controllers.TransferListRequest'
       produces:
@@ -341,7 +344,6 @@ paths:
       - description: UserPayload data
         in: body
         name: user
-        required: true
         schema:
           $ref: '#/definitions/controllers.UpdateUserPayload'
       produces:
@@ -436,4 +438,9 @@ paths:
       summary: Get All User
       tags:
       - CRUD
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

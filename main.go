@@ -18,12 +18,17 @@ var (
 	db = database.SetupDB() // Initialize your database connection
 )
 
-// @title Thanakrit GOlang test Rest API
-// @version 1.0
-// @description This is a sample server for a Gin REST API.
+//	@title			Thanakrit GOlang test Rest API
+//	@version		1.0
+//	@description	This is a sample server for a Gin REST API. \n Authorize  use Bearer {token from login} \n example  "Bearer eyJhbGciOiJIUzI"
 
-// @host localhost:8080
-// @BasePath /api
+// @host		localhost:8080
+// @BasePath	/api
+
+// @securityDefinitions.apikey BearerAuth
+// @type apiKey
+// @in header
+// @name Authorization
 
 func main() {
 

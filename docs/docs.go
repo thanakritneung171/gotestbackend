@@ -104,7 +104,6 @@ const docTemplate = `{
                         "description": "date: '2024-06-25'",
                         "name": "TransferListRequest",
                         "in": "body",
-                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/controllers.TransferListRequest"
                         }
@@ -421,7 +420,6 @@ const docTemplate = `{
                         "description": "UserPayload data",
                         "name": "user",
                         "in": "body",
-                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/controllers.UpdateUserPayload"
                         }
@@ -658,9 +656,11 @@ const docTemplate = `{
             }
         },
         "models.User": {
+            "description": "User represents the entity of a user with basic information like username, personal details, account number, and credit balance.",
             "type": "object",
             "properties": {
                 "account_number": {
+                    "description": "@description The account number associated with the user.",
                     "type": "string"
                 },
                 "credit": {
@@ -683,6 +683,13 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
@@ -693,7 +700,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Thanakrit GOlang test Rest API",
-	Description:      "This is a sample server for a Gin REST API.",
+	Description:      "This is a sample server for a Gin REST API. \\n Authorize  use Bearer {token from login} \\n example  \"Bearer eyJhbGciOiJIUzI\"",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

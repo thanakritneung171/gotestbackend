@@ -11,17 +11,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// @Summary      Register a new user
-// @Description  Registers a new user with initial credit
-// @Tags         Auth , CRUD
-// @Security 	 BearerAuth
-// @Accept       json
-// @Produce      json
-// @Param        user  body      models.User  true  "User data"
-// @Success      201    {object}  models.User
-// @Failure      400    {object}  map[string]string "message"
-// @Failure      401    {object}  map[string]string "message"
-// @Router       /user/register [post]
+// @Summary		Register a new user
+// @Description	Registers a new user with initial credit
+// @Tags			Auth , CRUD
+// @Security		BearerAuth
+// @Accept			json
+// @Produce		json
+// @Param			user	body		models.User	true	"User data"
+// @Success		201		{object}	models.User
+// @Failure		400		{object}	map[string]string	"message"
+// @Failure		401		{object}	map[string]string	"message"
+// @Router			/user/register [post]
 func Register(c *gin.Context) {
 	var newUser models.User
 	//fmt.Println("passhash :", string(hashedPassword))
@@ -71,15 +71,15 @@ func isValidAccountNumber(accountNumber string) bool {
 	return true
 }
 
-// @Summary      Get All User
-// @Description  Get details all user
-// @Tags 		 CRUD
-// @Security 	 BearerAuth
-// @Accept       json
-// @Produce      json
-// @Success      200     {object} []models.User
-// @Failure      404     {object} map[string]string "message"
-// @Router       /userAll [get]
+// @Summary		Get All User
+// @Description	Get details all user
+// @Tags			CRUD
+// @Security		BearerAuth
+// @Accept			json
+// @Produce		json
+// @Success		200	{object}	[]models.User
+// @Failure		404	{object}	map[string]string	"message"
+// @Router			/userAll [get]
 func GetAllUser(c *gin.Context) {
 	var user []models.User
 	if err := database.DB.Find(&user).Error; err != nil {
@@ -90,16 +90,17 @@ func GetAllUser(c *gin.Context) {
 }
 
 // GetUser retrieves the logged-in user's details
-// @Summary      Get user by ID
-// @Description  Get details of a user by their ID
-// @Tags 		 CRUD
-// @Security 	 BearerAuth
-// @Accept       json
-// @Produce      json
-// @Param        id      path    string  true  "User ID"
-// @Success      200     {object} models.User
-// @Failure      404     {object} models.ErrorResponse
-// @Router       /user/GetUserByID/{id} [get]
+//
+//	@Summary		Get user by ID
+//	@Description	Get details of a user by their ID
+//	@Tags			CRUD
+//	@Security		BearerAuth
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	models.User
+//	@Failure		404	{object}	models.ErrorResponse
+//	@Router			/user/GetUserByID/{id} [get]
 func GetUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
@@ -110,17 +111,17 @@ func GetUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// @Summary      Update User By ID
-// @Description  Update a user
-// @Tags         CRUD
-// @Security 	 BearerAuth
-// @Accept       json
-// @Produce      json
-// @Param        user  body      models.User  true  "User data"
-// @Success      201    {object}  models.User
-// @Failure      400    {object}  map[string]string "message"
-// @Failure      404    {object}  map[string]string "message"
-// @Router       /user/UpdateUserByID/{id} [put]
+// @Summary		Update User By ID
+// @Description	Update a user
+// @Tags			CRUD
+// @Security		BearerAuth
+// @Accept			json
+// @Produce		json
+// @Param			user	body		models.User	true	"User data"
+// @Success		201		{object}	models.User
+// @Failure		400		{object}	map[string]string	"message"
+// @Failure		404		{object}	map[string]string	"message"
+// @Router			/user/UpdateUserByID/{id} [put]
 func UpdateUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
@@ -139,16 +140,16 @@ func UpdateUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// @Summary      Update User By ID
-// @Description  Update a  user
-// @Tags         CRUD
-// @Security 	 BearerAuth
-// @Accept       json
-// @Produce      json
-// @Param        id      path    string  true  "User ID"
-// @Success      201    {object}  map[string]string "message"
-// @Failure      400    {object}  map[string]string "message"
-// @Router       /user/DeleteUserByID/{id} [delete]
+// @Summary		Update User By ID
+// @Description	Update a  user
+// @Tags			CRUD
+// @Security		BearerAuth
+// @Accept			json
+// @Produce		json
+// @Param			id	path		string				true	"User ID"
+// @Success		201	{object}	map[string]string	"message"
+// @Failure		400	{object}	map[string]string	"message"
+// @Router			/user/DeleteUserByID/{id} [delete]
 func DeleteUserByID(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
@@ -176,17 +177,18 @@ type UpdateUserPayload struct {
 }
 
 // Login godoc
-// @Summary login
-// @Description Authenticates a user and returns a JWT token
-// @Tags Auth
-// @Accept  json
-// @Produce  json
-// @Param payload body LoginPayload true "Login payload"
-// @Success 200 {object} map[string]string "token"
-// @Failure 400 {object} map[string]string "message"
-// @Failure 401 {object} map[string]string "message"
-// @Failure 500 {object} map[string]string "message"
-// @Router /user/login [post]
+//
+//	@Summary		login
+//	@Description	Authenticates a user and returns a JWT token
+//	@Tags			Auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		LoginPayload		true	"Login payload"
+//	@Success		200		{object}	map[string]string	"token"
+//	@Failure		400		{object}	map[string]string	"message"
+//	@Failure		401		{object}	map[string]string	"message"
+//	@Failure		500		{object}	map[string]string	"message"
+//	@Router			/user/login [post]
 func Login(c *gin.Context) {
 	var payload LoginPayload
 	var user models.User
@@ -216,16 +218,17 @@ func Login(c *gin.Context) {
 }
 
 // GetUser retrieves the logged-in user's details
-// @Summary      getUser
-// @Description  GetUserProfile by id token
-// @Tags         User
-// @Security 	 BearerAuth
-// @Accept       json
-// @Produce      json
-// @Success      200     {object} models.User
-// @Failure      400     {object} models.ErrorResponse
-// @Failure      404     {object} models.ErrorResponse
-// @Router       /user/me [get]
+//
+//	@Summary		getUser
+//	@Description	GetUserProfile by id token
+//	@Tags			User
+//	@Security		BearerAuth
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	models.User
+//	@Failure		400	{object}	models.ErrorResponse
+//	@Failure		404	{object}	models.ErrorResponse
+//	@Router			/user/me [get]
 func GetUser(c *gin.Context) {
 	var user models.User
 	idparam, exists := c.Get("user_id")
@@ -248,18 +251,19 @@ func GetUser(c *gin.Context) {
 }
 
 // UpdateUser updates the logged-in user's details
-// @Summary      updateUser
-// @Description  UpdateUser by id token
-// @Tags         User
-// @Security 	 BearerAuth
-// @Accept       json
-// @Produce      json
-// @Param        user  body      UpdateUserPayload  true  "UserPayload data"
-// @Success      200     {object} models.User
-// @Failure      400     {object} map[string]string "message"
-// @Failure      401     {object} map[string]string "message"
-// @Failure      404     {object} map[string]string "message"
-// @Router       /user/me [patch]
+//
+//	@Summary		updateUser
+//	@Description	UpdateUser by id token
+//	@Tags			User
+//	@Security		BearerAuth
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		UpdateUserPayload false	"UserPayload data"
+//	@Success		200		{object}	models.User
+//	@Failure		400		{object}	map[string]string	"message"
+//	@Failure		401		{object}	map[string]string	"message"
+//	@Failure		404		{object}	map[string]string	"message"
+//	@Router			/user/me [patch]
 func UpdateUser(c *gin.Context) {
 	userId, exists := c.Get("user_id")
 	if !exists {
@@ -312,18 +316,19 @@ type transferRequest struct {
 }
 
 // TransferCredit transfers credit from one user to another
-// @Summary      transfer
-// @Description  TransferCredit transfers credit from one user to another
-// @Tags         accounting
-// @Security 	 BearerAuth
-// @Accept       json
-// @Produce      json
-// @Param        transferRequest  body      transferRequest true  "transferRequest data"
-// @Success      200     {object} models.Transaction
-// @Failure      400     {object} map[string]string "message"
-// @Failure      404     {object} map[string]string "message"
-// @Failure      500     {object} map[string]string "message"
-// @Router       /accounting/transfer [post]
+//
+//	@Summary		transfer
+//	@Description	TransferCredit transfers credit from one user to another
+//	@Tags			accounting
+//	@Security		BearerAuth
+//	@Accept			json
+//	@Produce		json
+//	@Param			transferRequest	body		transferRequest	true	"transferRequest data"
+//	@Success		200				{object}	models.Transaction
+//	@Failure		400				{object}	map[string]string	"message"
+//	@Failure		404				{object}	map[string]string	"message"
+//	@Failure		500				{object}	map[string]string	"message"
+//	@Router			/accounting/transfer [post]
 func Transfer(c *gin.Context) {
 	idparam, exists := c.Get("user_id")
 	if !exists {
@@ -418,18 +423,19 @@ type TransferListRequest struct {
 }
 
 // GetTransferList retrieves the list of credit transfer history with optional filters
-// @Summary      getTransferList
-// @Description  GetTransferList retrieves the list of credit transfer history with optional filters
-// @Tags         accounting
-// @Security 	 BearerAuth
-// @Accept       json
-// @Produce      json
-// @Param        TransferListRequest  body      TransferListRequest true  "date: '2024-06-25'"
-// @Success      200     {object} models.Transaction
-// @Failure      400     {object} map[string]string "message"
-// @Failure      401     {object} map[string]string "message"
-// @Failure      500     {object} map[string]string "message"
-// @Router       /accounting/transfer-list [get]
+//
+//	@Summary		getTransferList
+//	@Description	GetTransferList retrieves the list of credit transfer history with optional filters
+//	@Tags			accounting
+//	@Security		BearerAuth
+//	@Accept			json
+//	@Produce		json
+//	@Param			TransferListRequest	body		TransferListRequest false	"date: '2024-06-25'"
+//	@Success		200					{object}	models.Transaction
+//	@Failure		400					{object}	map[string]string	"message"
+//	@Failure		401					{object}	map[string]string	"message"
+//	@Failure		500					{object}	map[string]string	"message"
+//	@Router			/accounting/transfer-list [get]
 func GetTransferList(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {
