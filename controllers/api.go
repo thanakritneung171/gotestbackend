@@ -137,6 +137,23 @@ func UpdateUserByID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
+	var userexists models.User
+	database.DB.Where("username = ? ", updatedUser.Username).First(&userexists)
+	if userexists.ID > 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"Message": "User exist"})
+		return
+	}
+	if !isValidAccountNumber(updatedUser.AccountNumber) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Account Number must be a 10-digit number"})
+		return
+	}
+	database.DB.Where("account_number = ? ", updatedUser.AccountNumber).First(&userexists)
+	if userexists.ID > 0 {
+		c.JSON(http.StatusNotFound, gin.H{"Message": "Account Number exist"})
+		return
+	}
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(updatedUser.Password), bcrypt.DefaultCost)
+	updatedUser.Password = string(hashedPassword)
 	// Update user fields
 	database.DB.Model(&user).Updates(updatedUser)
 	c.JSON(http.StatusOK, user)
